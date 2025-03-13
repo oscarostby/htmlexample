@@ -2,9 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <link rel="icon" href="favicon.ico" type="image/x-icon" />
     <title>Bas kommunikasjon</title>
     <link
@@ -18,6 +19,8 @@
         padding: 0;
         width: 100%;
         height: 100%;
+        overflow: hidden;
+        position: fixed;
       }
       body {
         background: #f0f0f0;
@@ -33,13 +36,13 @@
           Helvetica,
           Arial,
           sans-serif;
-        overflow: auto;
       }
       .wrapper {
         display: flex;
         justify-content: center;
         align-items: center;
         width: 100%;
+        height: 100%;
       }
       .iphone {
         width: 390px;
@@ -132,12 +135,6 @@
         -webkit-backdrop-filter: blur(10px);
         z-index: 4;
         border-bottom: solid 1px #dbdbdb;
-        @media (max-width: 768px) {
-          position: fixed;
-          top: 0;
-          width: 100vw;
-          z-index: 1000;
-        }
       }
       .pop-left-img {
         position: absolute;
@@ -178,24 +175,6 @@
         padding: 10px;
         background: #fff;
       }
-      .fullscreen-btn {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background: rgba(0, 0, 0, 0.7);
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 50px;
-        height: 50px;
-        font-size: 18px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 100000;
-        cursor: pointer;
-        display: none;
-      }
       @media (max-width: 768px) {
         .iphone {
           width: 100vw;
@@ -203,6 +182,7 @@
           border-radius: 0;
           box-shadow: none;
           transform: none;
+          background: white;
         }
         .screen {
           top: 0;
@@ -210,22 +190,57 @@
           right: 0;
           bottom: 0;
           border-radius: 0;
+          background: white;
         }
-        .status-left,
-        .status-center,
-        .status-right,
-        .bottomline {
-          display: none !important;
+        .blur-box {
+          position: fixed;
+          top: 0;
+          width: 100%;
+          z-index: 1000;
         }
-        .fullscreen-btn {
+        .chat-embed-container {
+          top: 154px;
+          left: 0;
+          padding: 0;
+          height: calc(100% - 154px);
+          width: 100%;
+        }
+        /* Display status elements on mobile */
+        .status-left, .status-center, .status-right {
           display: flex;
         }
-      }
-      /* Styles for when in fullscreen mode */
-      .fullscreen-mode .status-bar {
-        display: none;
+        .status-bar {
+          padding-top: env(safe-area-inset-top);
+          height: calc(44px + env(safe-area-inset-top));
+        }
+        .bottomline {
+          bottom: env(safe-area-inset-bottom);
+          display: block;
+        }
       }
     </style>
+    <script>
+      // Check if the browser supports the Fullscreen API
+      document.addEventListener('DOMContentLoaded', function() {
+        // Try to go fullscreen when page loads or on first user interaction
+        document.body.addEventListener('click', goFullScreen, { once: true });
+        
+        // Also try on page load for browsers that allow it
+        setTimeout(goFullScreen, 500);
+      });
+      
+      function goFullScreen() {
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen().catch(err => {
+            console.log('Fullscreen request failed: ' + err.message);
+          });
+        } else if (document.documentElement.webkitRequestFullscreen) {
+          document.documentElement.webkitRequestFullscreen();
+        } else if (document.documentElement.msRequestFullscreen) {
+          document.documentElement.msRequestFullscreen();
+        }
+      }
+    </script>
   </head>
   <body>
     <div class="wrapper">
@@ -267,7 +282,7 @@
           </div>
           <div class="bottomline"></div>
           <div class="chat-embed-container">
-            <div id="xenioowebchat" style="width: 100%; height: 600px"></div>
+            <div id="xenioowebchat" style="width: 100%; height: 100%"></div>
             <script
               data-id="xenioo"
               data-node="cm91dGluZy54ZW5pb28uY29t"
@@ -284,63 +299,5 @@
         </div>
       </div>
     </div>
-    
-    <!-- Fullscreen button for mobile -->
-    <button class="fullscreen-btn" id="fullscreenBtn">
-      <i class="fas fa-expand"></i>
-    </button>
-
-    <script>
-      // Check if the device is iOS (iPad, iPhone, iPod)
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-      
-      // Get the fullscreen button
-      const fullscreenBtn = document.getElementById('fullscreenBtn');
-      
-      // Only show the fullscreen button on mobile devices
-      if (window.innerWidth <= 768) {
-        fullscreenBtn.style.display = 'flex';
-      }
-      
-      // Function to handle fullscreen request
-      function toggleFullScreen() {
-        const doc = window.document;
-        const docEl = doc.documentElement;
-        
-        if (isIOS) {
-          // For iOS devices, we use the web app capable meta tag
-          // Display a message instructing the user how to add to home screen
-          if (!window.navigator.standalone) {
-            alert("For fullscreen mode, please add this page to your home screen. Tap the share icon and select 'Add to Home Screen'.");
-          }
-        } else {
-          // For other devices, use the standard Fullscreen API
-          const requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
-          const exitFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
-          
-          if (!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
-            requestFullScreen.call(docEl);
-            fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
-            document.body.classList.add('fullscreen-mode');
-          } else {
-            exitFullScreen.call(doc);
-            fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
-            document.body.classList.remove('fullscreen-mode');
-          }
-        }
-      }
-      
-      // Add click event listener to the fullscreen button
-      fullscreenBtn.addEventListener('click', toggleFullScreen);
-      
-      // Listen for orientation changes to adjust the layout
-      window.addEventListener('resize', function() {
-        if (window.innerWidth <= 768) {
-          fullscreenBtn.style.display = 'flex';
-        } else {
-          fullscreenBtn.style.display = 'none';
-        }
-      });
-    </script>
   </body>
 </html>
